@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<style>
+
+</style>
+<head>
+    <title>Node demo</title>
+    <link rel="icon" type="image/png" href="https://images-ext-1.discordapp.net/external/G-GxnuHyZoNCXyzhinV-fvwy9CWDTKhDvY9duLbpJm0/%3Fsize%3D512/https/cdn.discordapp.com/avatars/747255405616562269/11fb80cf255901f2cbc34bed3b925fcf.png?format=webp&quality=lossless&width=245&height=245">
+</head>
+<body style="align-items:center;">
+    <svg height="800px" width="800px" style="border:1px solid black;">
+    </svg>
+    <br>
+    <button onclick="addCircle()">Add Circle</button>
+    <button onclick="addCon()">Add Connection</button>
+</body>
+<script>
+    let screenwidth = 800;
+    let screenheight = 800;
+    let radius = 10;
+    let gravity = .1;
+    let FPS = 60;
+
+
+    let circle_velocity_x = [];
+    let circle_velocity_y = [];
+    let circlenum = 0;
+
+    let connect_1 = [];
+    let connect_2 = [];
+
+    function addCircle() {
+        const svg = document.querySelector("svg");
+        const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+        newCircle.setAttribute("cx", Math.random() * (screenwidth - 2 * radius) + radius);
+        newCircle.setAttribute("cy", Math.random() * (screenheight - 2 * radius) + radius);
+        newCircle.setAttribute("r", radius);
+        newCircle.innerHTML = `<label>Circle ${circlenum++}</label>`;
+        newCircle.setAttribute("fill", getRandomColor());
+
+        circle_velocity_x.push(Math.floor(Math.random() * 10) - 5);
+        circle_velocity_y.push(Math.floor(Math.random() * 10) - 5);
+
+        svg.appendChild(newCircle);
+    }
+
+    function addCon() {
+        a = Math.floor(Math.random() * circlenum);
+        b = Math.floor(Math.random() * circlenum);
+        connect_1.push(Math.floor(a));
+        connect_2.push(Math.floor(b));
+        const svg = document.querySelector("svg");
+        const circles = svg.getElementsByTagName("circle")
+        const newLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        newLine.style.stroke = "black";
+        newLine.style.strokeWidth = "2";
+        svg.appendChild(newLine);
+        console.log(newLine);
+        };
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    };
+
+    function updateCircles() {
+        const svg = document.querySelector("svg");
+        const circles = svg.getElementsByTagName("circle");
+        for (let i = 0; i < circles.length; i++) {
+            let cx = parseFloat(circles[i].getAttribute("cx"));
+            let cy = parseFloat(circles[i].getAttribute("cy"));
+
+            cx = Math.floor(cx+circle_velocity_x[i])
+            cy = Math.floor(cy+circle_velocity_y[i])
+
+            if (cx <= radius || cx >= (screenwidth - radius)) {
+                circle_velocity_x[i] = -circle_velocity_x[i];
+
+            }
+            if (cy <= radius || cy >= (screenwidth - radius)) {
+                circle_velocity_y[i] = -circle_velocity_y[i];
+            }
+
+            if (cx <= -radius || cx >= (screenwidth + radius)) {
+                cx = screenwidth / 2;
+
+            }
+            if (cy <= -radius || cy >= (screenwidth + radius)) {
+                cy = screenheight / 2;
+            }
+
+            circles[i].setAttribute("cx", cx);
+            circles[i].setAttribute("cy", cy);
+
+
+            circle_velocity_y[i] += gravity;
+            
+        }
+    }
+    
+    function updateConnections() {
+        const svg = document.querySelector("svg");
+        const circles = svg.getElementsByTagName("circle");
+        const Line = svg.getElementsByTagName("line");
+        for (let i = 0; i < connect_1.length; i++) {
+            Line[i].setAttribute("x1",circles[connect_1[i]].cx.baseVal.value);
+            Line[i].setAttribute("y1",circles[connect_1[i]].cy.baseVal.value);
+            Line[i].setAttribute("x2",circles[connect_2[i]].cx.baseVal.value);
+            Line[i].setAttribute("y2",circles[connect_2[i]].cy.baseVal.value);
+        }
+    }
+    
+    function tick() {
+        updateCircles()
+        updateConnections()
+    }
+    setInterval(tick, 1000 / FPS)
+</script>
