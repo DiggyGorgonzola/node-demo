@@ -17,9 +17,9 @@
     let screenwidth = 800;
     let screenheight = 800;
     let radius = 10;
-    let gravity = .1;
+    let gravity = 0;
     let FPS = 60;
-
+    let start_velo = 10;
 
     let circle_velocity_x = [];
     let circle_velocity_y = [];
@@ -38,8 +38,8 @@
         newCircle.innerHTML = `<label>Circle ${circlenum++}</label>`;
         newCircle.setAttribute("fill", getRandomColor());
 
-        circle_velocity_x.push(Math.floor(Math.random() * 10) - 5);
-        circle_velocity_y.push(Math.floor(Math.random() * 10) - 5);
+        circle_velocity_x.push(Math.floor(Math.random() * start_velo) - (start_velo / 2));
+        circle_velocity_y.push(Math.floor(Math.random() * start_velo) - (start_velo / 2));
 
         svg.appendChild(newCircle);
     }
@@ -92,7 +92,6 @@
             if (cy <= -radius || cy >= (screenwidth + radius)) {
                 cy = screenheight / 2;
             }
-
             circles[i].setAttribute("cx", cx);
             circles[i].setAttribute("cy", cy);
 
@@ -113,10 +112,40 @@
             Line[i].setAttribute("y2",circles[connect_2[i]].cy.baseVal.value);
         }
     }
+
+    function updateCirclesWithConnections() {
+        const svg = document.querySelector("svg");
+        const circles = svg.getElementsByTagName("circle");
+        const Line = svg.getElementsByTagName("line");
+        for (let i = 0; i < connect_1.length; i++) {
+            a = connect_1[i]
+            b = connect_2[i]
+
+            cx_1 = circles[a].cx.baseVal.value
+            cy_1 = circles[a].cy.baseVal.value
+
+            cx_2 = circles[b].cx.baseVal.value
+            cy_2 = circles[b].cy.baseVal.value
+
+            dist = Math.sqrt(Math.pow(cx_1 - cx_2,2) + Math.pow(cy_1 - cy_2,2))
+
+            cx_1 = cx_1 - (dist) * (cx_1-cx_2) / 20000;
+            cy_1 = cy_1 - (dist) * (cy_1-cy_2) / 20000;
+
+            cx_2 = cx_2 - (dist) * (cx_2-cx_1) / 20000;
+            cy_2 = cy_2 - (dist) * (cy_2-cy_1) / 20000;
+            
+            circles[a].setAttribute("cx", cx_1);
+            circles[a].setAttribute("cy", cy_1);
+            circles[b].setAttribute("cx", cx_2);
+            circles[b].setAttribute("cy", cy_2);
+        }
+    }
     
     function tick() {
         updateCircles()
         updateConnections()
+        updateCirclesWithConnections()
     }
     setInterval(tick, 1000 / FPS)
 </script>
