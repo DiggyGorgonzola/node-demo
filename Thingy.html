@@ -18,7 +18,7 @@
     let screenheight = 800;
     let radius = 10;
     let gravity = 0;
-    let Friction = .9;
+    let Friction = .999;
     let FPS = 60;
     let start_velo = 10;
 
@@ -74,9 +74,10 @@
         for (let i = 0; i < circles.length; i++) {
             let cx = parseFloat(circles[i].getAttribute("cx"));
             let cy = parseFloat(circles[i].getAttribute("cy"));
-
-            cx = cx+circle_velocity_x[i]
-            cy = cy+circle_velocity_y[i]
+            circle_velocity_x[i] *= Friction
+            circle_velocity_y[i] *= Friction
+            cx = cx+(circle_velocity_x[i])
+            cy = cy+(circle_velocity_y[i])
 
             if (cx <= radius || cx >= (screenwidth - radius)) {
                 circle_velocity_x[i] = -circle_velocity_x[i];
@@ -129,12 +130,12 @@
             cy_2 = circles[b].cy.baseVal.value
 
             dist = Math.sqrt(Math.pow(cx_1 - cx_2,2) + Math.pow(cy_1 - cy_2,2))
-            circle_velocity_x[a] = (circle_velocity_x[a] * Friction) - (dist * (cx_1-cx_2) / 2000000);
-            circle_velocity_y[a] = (circle_velocity_y[a] * Friction) - (dist * (cy_1-cy_2) / 2000000);
+            circle_velocity_x[a] = (circle_velocity_x[a]) - (dist * (cx_1-cx_2) / 2000000);
+            circle_velocity_y[a] = (circle_velocity_y[a]) - (dist * (cy_1-cy_2) / 2000000);
 
             
-            circle_velocity_x[b] = (circle_velocity_x[b] * Friction) - (dist * (cx_2-cx_1) / 2000000);
-            circle_velocity_y[b] = (circle_velocity_y[b] * Friction) - (dist * (cy_2-cy_1) / 2000000);
+            circle_velocity_x[b] = (circle_velocity_x[b]) - (dist * (cx_2-cx_1) / 2000000);
+            circle_velocity_y[b] = (circle_velocity_y[b]) - (dist * (cy_2-cy_1) / 2000000);
             
             circles[a].setAttribute("cx", cx_1);
             circles[a].setAttribute("cy", cy_1);
