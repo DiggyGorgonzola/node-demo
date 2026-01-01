@@ -185,6 +185,7 @@
     };
 
     function updateCircles() {
+        applyRepulsion()
         const svg = document.querySelector("svg");
         const labels = svg.getElementsByTagName("text");
         for (let i = 0; i < nodes.length; i++) {
@@ -233,7 +234,30 @@
             agents[i].newAgent.setAttribute("fill",agents[i].col)
         }
     }
-    
+    function applyRepulsion() {
+        const repulsionStrength = 1000;
+
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const dx = nodes[j].posx - nodes[i].posx;
+                const dy = nodes[j].posy - nodes[i].posy;
+                const distSq = dx * dx + dy * dy;
+                const minDist = nodes[i].rad + nodes[j].rad;
+
+                if (distSq < minDist * minDist && distSq > 0) {
+                    const force = repulsionStrength / distSq;
+
+                    const dist = Math.sqrt(distSq);
+                    const fx = (dx / dist) * force;
+                    const fy = (dy / dist) * force;
+                    nodes[i].velx -= fx;
+                    nodes[i].vely -= fy;
+                    nodes[j].velx += fx;
+                    nodes[j].vely += fy;
+                }
+            }
+        }
+    }
     function updateConnections() {
         const svg = document.querySelector("svg");
         for (let i = 0; i < connects.length; i++) {
