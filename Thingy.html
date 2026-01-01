@@ -12,7 +12,7 @@
     <br>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
         <button onclick="addCircle(Math.random() * (screenheight - 2 * radius) + radius,Math.random() * (screenheight - 2 * radius) + radius,radius,getRandomColor(),Math.floor(Math.random() * start_velo) - (start_velo / 2),Math.floor(Math.random() * start_velo) - (start_velo / 2),circlenum)">Add Random Circle</button>
-        <button onclick="addCon(Math.floor(Math.random() * circlenum), Math.floor(Math.random() * circlenum),.01,getRandomColor())">Add Random Connection</button>
+        <button onclick="addCon(Math.floor(Math.random() * circlenum), Math.floor(Math.random() * circlenum),Math.random(),getRandomColor())">Add Random Connection</button>
     </div>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
         <h>Ball Radius: </h>
@@ -41,7 +41,7 @@
     </div>
 
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
-        <button onclick="add_agent(1,1)">Add Agent</button>
+        <button onclick="add_agent(500,500,0,0,Math.floor(Math.random() * circlenum),radius / 2, 'red')">Add Agent</button>
     </div>
 </body>
 <script>
@@ -61,39 +61,23 @@
     let labels = [];
 
     let agent_num = 0;
-    let agent_funcs = [];
-    let agent_targets = [];
-
-    let agent_velocity_x = [];
-    let agent_velocity_y = [];
+    let agents = [];
+    // {x, y, vx, vy,target, func}
     function agent_func_1(x) {
         return x + 1;
     };
 
-    function add_agent(target,func) {
+    function add_agent(posx,posy,vx,vy,target,rad,col) {
         const svg = document.querySelector("svg");
         const circles = svg.getElementsByTagName("circle");
         const newAgent = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        newAgent.setAttribute("cx", parseFloat(screenwidth / 2));
-        newAgent.setAttribute("cy", screenheight / 2);
-        newAgent.setAttribute("r", radius / 2);
-        newAgent.setAttribute("fill", "#F0F0F0");
 
-        const newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        newText.setAttribute("x", screenwidth / 2);
-        newText.setAttribute("y", (screenheight / 2) - (radius / 3));
-        newText.setAttribute("text-anchor", "middle");
-        newText.setAttribute("font-size", `${radius / 2}`);
-        newText.setAttribute("fill", "black");
-        newText.textContent = target;
-        agent_targets.push(newText.textContent);
+        newAgent.setAttribute("cx",posx)
+        newAgent.setAttribute("cy",posy)
+        newAgent.setAttribute("fill",col)
 
-        agent_velocity_x.push(0);
-        agent_velocity_y.push(0);
-        agent_num += 1
-
-        svg.appendChild(newAgent);
-        svg.appendChild(newText);
+        agents.push({posx,posy,vx,vy,target,rad,col});
+        console.log(agents);
     }
     const inp1 = document.getElementById("inp1");
     const inp2 = document.getElementById("inp2");
@@ -148,7 +132,7 @@
         const svg = document.querySelector("svg");
         const newLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
         newLine.setAttribute("stroke", col);
-        newLine.setAttribute("stroke-width", `${strength * 1000}px`);
+        newLine.setAttribute("stroke-width", `${strength * 10}px`);
         svg.appendChild(newLine);
         connects.push({cona,conb,strength,col,newLine});
         console.log(newLine);
@@ -202,6 +186,12 @@
             nodes[i].newText.setAttribute("x",nodes[i].posx)
             nodes[i].newText.setAttribute("y",nodes[i].posy)
         }
+        for (let i = 0; i < agents.length; i++) {
+            agents[i].newAgent.setAttribute("cx",agents[i].posx)
+            agents[i].newAgent.setAttribute("cy",agents[i].posy)
+            agents[i].newAgent.setAttribute("r",agents[i].rad)
+            agents[i].newAgent.setAttribute("fill",agents[i].col)
+        }
     }
     
     function updateConnections() {
@@ -228,12 +218,12 @@
             cx_2 = nodes[b].posx;
             cy_2 = nodes[b].posy;
             dist = Math.sqrt(Math.pow(cx_1 - cx_2,2) + Math.pow(cy_1 - cy_2,2))
-            nodes[a].velx = (nodes[a].velx) - ((dist - 8 * nodes[a].rad) * (cx_1-cx_2)/(screenwidth)*connects[i].strength);
-            nodes[a].vely = (nodes[a].vely) - ((dist - 8 * nodes[a].rad) * (cy_1-cy_2)/(screenheight)*connects[i].strength);
+            nodes[a].velx = (nodes[a].velx) - ((dist - 8 * nodes[a].rad) * (cx_1-cx_2)/(screenwidth * FPS)*connects[i].strength);
+            nodes[a].vely = (nodes[a].vely) - ((dist - 8 * nodes[a].rad) * (cy_1-cy_2)/(screenheight * FPS)*connects[i].strength);
 
             
-            nodes[b].velx = (nodes[b].velx) - ((dist - 8 * nodes[b].rad) * (cx_2-cx_1)/(screenwidth)*connects[i].strength);
-            nodes[b].vely = (nodes[b].vely) - ((dist - 8 * nodes[b].rad) * (cy_2-cy_1)/(screenheight)*connects[i].strength);
+            nodes[b].velx = (nodes[b].velx) - ((dist - 8 * nodes[b].rad) * (cx_2-cx_1)/(screenwidth * FPS)*connects[i].strength);
+            nodes[b].vely = (nodes[b].vely) - ((dist - 8 * nodes[b].rad) * (cy_2-cy_1)/(screenheight * FPS)*connects[i].strength);
 
             
             nodes[a].newCircle.setAttribute("cx", cx_1);
