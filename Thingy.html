@@ -12,15 +12,36 @@
     <br>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
         <button onclick="addCircle(Math.random() * (screenheight - 2 * radius) + radius,Math.random() * (screenheight - 2 * radius) + radius,radius,getRandomColor(),Math.floor(Math.random() * start_velo) - (start_velo / 2),Math.floor(Math.random() * start_velo) - (start_velo / 2),circlenum)">Add Random Circle</button>
-        <button onclick="addCon(Math.floor(Math.random() * circlenum),Math.floor(Math.random() * circlenum))">Add Random Connection</button>
+        <button onclick="addCon(Math.floor(Math.random() * circlenum), Math.floor(Math.random() * circlenum),.01,getRandomColor())">Add Random Connection</button>
     </div>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
-        <h>Ball Radius: </h><input id="inp1" type="number" placeholder="Enter a number..."/><br>
-        <h>Gravity: </h><input id="inp2" type="number" placeholder="Enter a number..."/><br>
-        <h>Friction: </h><input id="inp3" type="number" placeholder="Enter a number..."/><br>
-        <h>FPS: </h><input id="inp4" type="number" placeholder="Enter a number..."/><br>
-        <h>Random Start Velocity: </h><input id="inp5" type="number" placeholder="Enter a number..."/><br><br>
-        <button onclick="setval()">Click to set values</button>
+        <h>Ball Radius: </h>
+        <input id="inp1" type="number" value="20"><br>
+
+        <h>Gravity: </h>
+        <input id="inp2" type="number" value="0"><br>
+
+        <h>Friction: </h>
+        <input id="inp3" type="number" step="0.01" value="0.99"><br>
+
+        <h>FPS: </h>
+        <input id="inp4" type="number" value="60"><br>
+
+        <h>Random Start Velocity: </h>
+        <input id="inp5" type="number" value="10"><br>
+    </div>
+    <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
+        <h>Ball Color:</h>
+        <input id="color" type="color" placeholder="Enter a hex color..."><br>
+
+        <h>Ball Label:</h>
+        <input id="balls-label" type="text" placeholder="Enter label"><br>
+
+        <button onclick="addCircle(Math.random() * (screenwidth - 2 * radius),Math.random() * (screenheight - 2 * radius),radius,String(document.getElementById('color').value),0,0,String(document.getElementById('balls-label').value))">Click!</button>
+    </div>
+
+    <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
+        <button onclick="add_agent(1,1)">Add Agent</button>
     </div>
 </body>
 <script>
@@ -31,34 +52,83 @@
     let Friction = .99;
     let FPS = 60;
     let start_velo = 10;
+    let nodes = [];
+    // {x, y, vx, vy, r, label, col}
 
-    let circle_velocity_x = [];
-    let circle_velocity_y = [];
+    let connects = [];
+    // {a, b, strength, col}
     let circlenum = 0;
+    let labels = [];
 
-    let circle_labels = []
+    let agent_num = 0;
+    let agent_funcs = [];
+    let agent_targets = [];
 
-    let connect_1 = [];
-    let connect_2 = [];
+    let agent_velocity_x = [];
+    let agent_velocity_y = [];
+    function agent_func_1(x) {
+        return x + 1;
+    };
 
-    function setval() {
-        radius = document.getElementById("inp1").value;
-        gravity = document.getElementById("inp2").value;
-        Friction = document.getElementById("inp3").value;
-        FPS = document.getElementById("inp4").value;
-        start_velo = document.getElementById("inp5").value;
-        console.log([document.getElementById("inp1").value,document.getElementById("inp2").value,document.getElementById("inp3").value,document.getElementById("inp4").value])
-        console.log(gravity);
+    function add_agent(target,func) {
+        const svg = document.querySelector("svg");
+        const circles = svg.getElementsByTagName("circle");
+        const newAgent = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        newAgent.setAttribute("cx", parseFloat(screenwidth / 2));
+        newAgent.setAttribute("cy", screenheight / 2);
+        newAgent.setAttribute("r", radius / 2);
+        newAgent.setAttribute("fill", "#F0F0F0");
+
+        const newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        newText.setAttribute("x", screenwidth / 2);
+        newText.setAttribute("y", (screenheight / 2) - (radius / 3));
+        newText.setAttribute("text-anchor", "middle");
+        newText.setAttribute("font-size", `${radius / 2}`);
+        newText.setAttribute("fill", "black");
+        newText.textContent = target;
+        agent_targets.push(newText.textContent);
+
+        agent_velocity_x.push(0);
+        agent_velocity_y.push(0);
+        agent_num += 1
+
+        svg.appendChild(newAgent);
+        svg.appendChild(newText);
     }
+    const inp1 = document.getElementById("inp1");
+    const inp2 = document.getElementById("inp2");
+    const inp3 = document.getElementById("inp3");
+    const inp4 = document.getElementById("inp4");
+    const inp5 = document.getElementById("inp5");
+
+    inp1.addEventListener("input", () => {
+        radius = Number(inp1.value);
+    });
+
+    inp2.addEventListener("input", () => {
+        gravity = Number(inp2.value);
+    });
+
+    inp3.addEventListener("input", () => {
+        Friction = Number(inp3.value);
+    });
+
+    inp4.addEventListener("input", () => {
+        FPS = Number(inp4.value);
+        restartTimer();
+    });
+
+    inp5.addEventListener("input", () => {
+        start_velo = Number(inp5.value);
+    });
 
     function addCircle(posx, posy, rad, col, velx, vely, label) {
         const svg = document.querySelector("svg");
         const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-
         newCircle.setAttribute("cx", posx);
         newCircle.setAttribute("cy", posy);
         newCircle.setAttribute("r", rad);
-        newCircle.setAttribute("fill", getRandomColor());
+        newCircle.setAttribute("fill", col);
 
         const newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
         newText.setAttribute("x", posx);
@@ -67,28 +137,20 @@
         newText.setAttribute("font-size", `${radius}`);
         newText.setAttribute("fill", "black");
         newText.textContent = label;
-        circle_labels.push(newText.textContent);
-
-
-        circle_velocity_x.push(velx);
-        circle_velocity_y.push(vely);
+        nodes.push({posx,posy,velx,vely,rad,label,col,newCircle,newText});
         circlenum += 1
 
         svg.appendChild(newCircle);
         svg.appendChild(newText);
     }
 
-    function addCon(cona,conb) {
-        a = cona;
-        b = conb;
-        connect_1.push(Math.floor(a));
-        connect_2.push(Math.floor(b));
+    function addCon(cona,conb,strength,col) {
         const svg = document.querySelector("svg");
-        const circles = svg.getElementsByTagName("circle")
         const newLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        newLine.style.stroke = "black";
-        newLine.style.strokeWidth = "2";
+        newLine.setAttribute("stroke", col);
+        newLine.setAttribute("stroke-width", `${strength * 1000}px`);
         svg.appendChild(newLine);
+        connects.push({cona,conb,strength,col,newLine});
         console.log(newLine);
         };
 
@@ -103,53 +165,52 @@
 
     function updateCircles() {
         const svg = document.querySelector("svg");
-        const circles = svg.getElementsByTagName("circle");
         const labels = svg.getElementsByTagName("text");
-        for (let i = 0; i < circles.length; i++) {
-            let cx = parseFloat(circles[i].getAttribute("cx"));
-            let cy = parseFloat(circles[i].getAttribute("cy"));
-            circle_velocity_x[i] *= Friction
-            circle_velocity_y[i] *= Friction
-            cx = cx+(circle_velocity_x[i])
-            cy = cy+(circle_velocity_y[i])
+        for (let i = 0; i < nodes.length; i++) {
+            let cx = parseFloat(nodes[i].posx);
+            let cy = parseFloat(nodes[i].posy);
+            nodes[i].velx *= Friction
+            nodes[i].vely *= Friction
+            cx += parseFloat((nodes[i].velx*60)/FPS)
+            cy += parseFloat((nodes[i].vely*60)/FPS)
 
-            if (cx <= radius || cx >= (screenwidth - radius)) {
-                circle_velocity_x[i] = -circle_velocity_x[i];
+            if (cx <= nodes[i].rad || cx >= (screenwidth - nodes[i].rad  )) {
+                nodes[i].velx = -nodes[i].velx;
 
             }
-            if (cy <= radius || cy >= (screenheight - radius)) {
-                circle_velocity_y[i] = -circle_velocity_y[i];
+            if (cy <= nodes[i].rad   || cy >= (screenheight - nodes[i].rad  )) {
+                nodes[i].vely = -nodes[i].vely;
             }
 
-            if (cx <= -radius || cx >= (screenwidth + radius)) {
+            if (cx <= -nodes[i].rad   || cx >= (screenwidth + nodes[i].rad  )) {
                 cx = screenwidth / 2;
 
             }
-            if (cy <= -radius || cy >= (screenheight + radius)) {
+            if (cy <= -nodes[i].rad   || cy >= (screenheight + nodes[i].rad  )) {
                 cy = screenheight / 2;
             }
-            circles[i].setAttribute("cx", cx);
-            circles[i].setAttribute("cy", cy);
-            labels[i].setAttribute("x", cx);
-            labels[i].setAttribute("y", cy + radius / 3);
+            nodes[i].posx = cx;
+            nodes[i].posy = cy;
 
-            circle_velocity_y[i] += gravity/FPS;
-            console.log(gravity);
-            
+            nodes[i].vely += gravity/FPS;
 
-            circles[i].setAttribute("r", radius);
+            nodes[i].newCircle.setAttribute("cx",nodes[i].posx)
+            nodes[i].newCircle.setAttribute("cy",nodes[i].posy)
+            nodes[i].newCircle.setAttribute("r",nodes[i].rad)
+            nodes[i].newCircle.setAttribute("fill",nodes[i].col)
+
+            nodes[i].newText.setAttribute("x",nodes[i].posx)
+            nodes[i].newText.setAttribute("y",nodes[i].posy)
         }
     }
     
     function updateConnections() {
         const svg = document.querySelector("svg");
-        const circles = svg.getElementsByTagName("circle");
-        const Line = svg.getElementsByTagName("line");
-        for (let i = 0; i < connect_1.length; i++) {
-            Line[i].setAttribute("x1",circles[connect_1[i]].cx.baseVal.value);
-            Line[i].setAttribute("y1",circles[connect_1[i]].cy.baseVal.value);
-            Line[i].setAttribute("x2",circles[connect_2[i]].cx.baseVal.value);
-            Line[i].setAttribute("y2",circles[connect_2[i]].cy.baseVal.value);
+        for (let i = 0; i < connects.length; i++) {
+            connects[i].newLine.setAttribute("x1",nodes[connects[i].cona].posx);
+            connects[i].newLine.setAttribute("y1",nodes[connects[i].cona].posy);
+            connects[i].newLine.setAttribute("x2",nodes[connects[i].conb].posx);
+            connects[i].newLine.setAttribute("y2",nodes[connects[i].conb].posy);
         }
     }
 
@@ -157,35 +218,40 @@
         const svg = document.querySelector("svg");
         const circles = svg.getElementsByTagName("circle");
         const Line = svg.getElementsByTagName("line");
-        for (let i = 0; i < connect_1.length; i++) {
-            a = connect_1[i]
-            b = connect_2[i]
+        for (let i = 0; i < connects.length; i++) {
+            a = connects[i].cona;
+            b = connects[i].conb;
 
-            cx_1 = circles[a].cx.baseVal.value
-            cy_1 = circles[a].cy.baseVal.value
+            cx_1 = nodes[a].posx;
+            cy_1 = nodes[a].posy;
 
-            cx_2 = circles[b].cx.baseVal.value
-            cy_2 = circles[b].cy.baseVal.value
-
+            cx_2 = nodes[b].posx;
+            cy_2 = nodes[b].posy;
             dist = Math.sqrt(Math.pow(cx_1 - cx_2,2) + Math.pow(cy_1 - cy_2,2))
-            circle_velocity_x[a] = (circle_velocity_x[a]) - ((dist - 8 * radius) * (cx_1-cx_2) / 2000000);
-            circle_velocity_y[a] = (circle_velocity_y[a]) - ((dist - 8 * radius) * (cy_1-cy_2) / 2000000);
+            nodes[a].velx = (nodes[a].velx) - ((dist - 8 * nodes[a].rad) * (cx_1-cx_2)/(screenwidth)*connects[i].strength);
+            nodes[a].vely = (nodes[a].vely) - ((dist - 8 * nodes[a].rad) * (cy_1-cy_2)/(screenheight)*connects[i].strength);
 
             
-            circle_velocity_x[b] = (circle_velocity_x[b]) - ((dist - 8 * radius) * (cx_2-cx_1) / 2000000);
-            circle_velocity_y[b] = (circle_velocity_y[b]) - ((dist - 8 * radius) * (cy_2-cy_1) / 2000000);
+            nodes[b].velx = (nodes[b].velx) - ((dist - 8 * nodes[b].rad) * (cx_2-cx_1)/(screenwidth)*connects[i].strength);
+            nodes[b].vely = (nodes[b].vely) - ((dist - 8 * nodes[b].rad) * (cy_2-cy_1)/(screenheight)*connects[i].strength);
+
             
-            circles[a].setAttribute("cx", cx_1);
-            circles[a].setAttribute("cy", cy_1);
-            circles[b].setAttribute("cx", cx_2);
-            circles[b].setAttribute("cy", cy_2);
+            nodes[a].newCircle.setAttribute("cx", cx_1);
+            nodes[a].newCircle.setAttribute("cy", cy_1);
+            nodes[b].newCircle.setAttribute("cx", cx_2);
+            nodes[b].newCircle.setAttribute("cy", cy_2);
         }
     }
     
+    let timer = setInterval(tick, 1000 / FPS);
+
     function tick() {
         updateCircles()
         updateConnections()
         updateCirclesWithConnections()
     }
-    setInterval(tick, 1000 / FPS)
+    function restartTimer() {
+        clearInterval(timer);
+        timer = setInterval(tick, 1000 / FPS);
+    }
 </script>
