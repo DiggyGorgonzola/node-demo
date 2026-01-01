@@ -11,16 +11,24 @@
     </svg>
     <br>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
-        <button onclick="addCircle(Math.random() * (screenheight - 2 * radius) + radius,Math.random() * (screenheight - 2 * radius) + radius,radius,getRandomColor(),Math.floor(Math.random() * start_velo) - (start_velo / 2),Math.floor(Math.random() * start_velo) - (start_velo / 2))">Add Circle</button>
-        <button onclick="addCon(Math.floor(Math.random() * circlenum),Math.floor(Math.random() * circlenum))">Add Connection</button>
+        <button onclick="addCircle(Math.random() * (screenheight - 2 * radius) + radius,Math.random() * (screenheight - 2 * radius) + radius,radius,getRandomColor(),Math.floor(Math.random() * start_velo) - (start_velo / 2),Math.floor(Math.random() * start_velo) - (start_velo / 2),circlenum)">Add Random Circle</button>
+        <button onclick="addCon(Math.floor(Math.random() * circlenum),Math.floor(Math.random() * circlenum))">Add Random Connection</button>
+    </div>
+    <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
+        <h>Ball Radius: </h><input id="inp1" type="number" placeholder="Enter a number..."/><br>
+        <h>Gravity: </h><input id="inp2" type="number" placeholder="Enter a number..."/><br>
+        <h>Friction: </h><input id="inp3" type="number" placeholder="Enter a number..."/><br>
+        <h>FPS: </h><input id="inp4" type="number" placeholder="Enter a number..."/><br>
+        <h>Random Start Velocity: </h><input id="inp5" type="number" placeholder="Enter a number..."/><br><br>
+        <button onclick="setval()">Click to set values</button>
     </div>
 </body>
 <script>
     let screenwidth = 800;
     let screenheight = 800;
-    let radius = 10;
+    let radius = 20;
     let gravity = 0;
-    let Friction = .995;
+    let Friction = .99;
     let FPS = 60;
     let start_velo = 10;
 
@@ -28,28 +36,46 @@
     let circle_velocity_y = [];
     let circlenum = 0;
 
+    let circle_labels = []
+
     let connect_1 = [];
     let connect_2 = [];
 
-    function addCircle(posx, posy, rad, col, velx, vely) {
+    function setval() {
+        radius = document.getElementById("inp1").value;
+        gravity = document.getElementById("inp2").value;
+        Friction = document.getElementById("inp3").value;
+        FPS = document.getElementById("inp4").value;
+        start_velo = document.getElementById("inp5").value;
+        console.log([document.getElementById("inp1").value,document.getElementById("inp2").value,document.getElementById("inp3").value,document.getElementById("inp4").value])
+        console.log(gravity);
+    }
+
+    function addCircle(posx, posy, rad, col, velx, vely, label) {
         const svg = document.querySelector("svg");
         const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        const newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
 
         newCircle.setAttribute("cx", posx);
         newCircle.setAttribute("cy", posy);
         newCircle.setAttribute("r", rad);
         newCircle.setAttribute("fill", getRandomColor());
 
+        const newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
         newText.setAttribute("x", posx);
-        newText.setAttribute("y", posy);
-        newText.innerHTML = circlenum;
+        newText.setAttribute("y", posy - radius / 3);
+        newText.setAttribute("text-anchor", "middle");
+        newText.setAttribute("font-size", `${radius}`);
+        newText.setAttribute("fill", "black");
+        newText.textContent = label;
+        circle_labels.push(newText.textContent);
+
 
         circle_velocity_x.push(velx);
         circle_velocity_y.push(vely);
         circlenum += 1
 
         svg.appendChild(newCircle);
+        svg.appendChild(newText);
     }
 
     function addCon(cona,conb) {
@@ -91,7 +117,7 @@
                 circle_velocity_x[i] = -circle_velocity_x[i];
 
             }
-            if (cy <= radius || cy >= (screenwidth - radius)) {
+            if (cy <= radius || cy >= (screenheight - radius)) {
                 circle_velocity_y[i] = -circle_velocity_y[i];
             }
 
@@ -99,14 +125,19 @@
                 cx = screenwidth / 2;
 
             }
-            if (cy <= -radius || cy >= (screenwidth + radius)) {
+            if (cy <= -radius || cy >= (screenheight + radius)) {
                 cy = screenheight / 2;
             }
             circles[i].setAttribute("cx", cx);
             circles[i].setAttribute("cy", cy);
+            labels[i].setAttribute("x", cx);
+            labels[i].setAttribute("y", cy + radius / 3);
 
-            circle_velocity_y[i] += gravity;
+            circle_velocity_y[i] += gravity/FPS;
+            console.log(gravity);
             
+
+            circles[i].setAttribute("r", radius);
         }
     }
     
@@ -137,12 +168,12 @@
             cy_2 = circles[b].cy.baseVal.value
 
             dist = Math.sqrt(Math.pow(cx_1 - cx_2,2) + Math.pow(cy_1 - cy_2,2))
-            circle_velocity_x[a] = (circle_velocity_x[a]) - (dist * (cx_1-cx_2) / 2000000);
-            circle_velocity_y[a] = (circle_velocity_y[a]) - (dist * (cy_1-cy_2) / 2000000);
+            circle_velocity_x[a] = (circle_velocity_x[a]) - ((dist - 8 * radius) * (cx_1-cx_2) / 2000000);
+            circle_velocity_y[a] = (circle_velocity_y[a]) - ((dist - 8 * radius) * (cy_1-cy_2) / 2000000);
 
             
-            circle_velocity_x[b] = (circle_velocity_x[b]) - (dist * (cx_2-cx_1) / 2000000);
-            circle_velocity_y[b] = (circle_velocity_y[b]) - (dist * (cy_2-cy_1) / 2000000);
+            circle_velocity_x[b] = (circle_velocity_x[b]) - ((dist - 8 * radius) * (cx_2-cx_1) / 2000000);
+            circle_velocity_y[b] = (circle_velocity_y[b]) - ((dist - 8 * radius) * (cy_2-cy_1) / 2000000);
             
             circles[a].setAttribute("cx", cx_1);
             circles[a].setAttribute("cy", cy_1);
