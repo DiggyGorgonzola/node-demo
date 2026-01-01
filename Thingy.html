@@ -6,19 +6,21 @@
     <title>Node demo</title>
     <link rel="icon" type="image/png" href="https://images-ext-1.discordapp.net/external/G-GxnuHyZoNCXyzhinV-fvwy9CWDTKhDvY9duLbpJm0/%3Fsize%3D512/https/cdn.discordapp.com/avatars/747255405616562269/11fb80cf255901f2cbc34bed3b925fcf.png?format=webp&quality=lossless&width=245&height=245">
 </head>
-<body style="align-items:center;">
-    <svg height="800px" width="800px" style="border:1px solid black;">
+<body>
+    <svg height="800px" width="800px" style="border:5px double black;">
     </svg>
     <br>
-    <button onclick="addCircle()">Add Circle</button>
-    <button onclick="addCon()">Add Connection</button>
+    <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
+        <button onclick="addCircle(Math.random() * (screenheight - 2 * radius) + radius,Math.random() * (screenheight - 2 * radius) + radius,radius,getRandomColor(),Math.floor(Math.random() * start_velo) - (start_velo / 2),Math.floor(Math.random() * start_velo) - (start_velo / 2))">Add Circle</button>
+        <button onclick="addCon(Math.floor(Math.random() * circlenum),Math.floor(Math.random() * circlenum))">Add Connection</button>
+    </div>
 </body>
 <script>
     let screenwidth = 800;
     let screenheight = 800;
     let radius = 10;
     let gravity = 0;
-    let Friction = .999;
+    let Friction = .995;
     let FPS = 60;
     let start_velo = 10;
 
@@ -29,25 +31,30 @@
     let connect_1 = [];
     let connect_2 = [];
 
-    function addCircle() {
+    function addCircle(posx, posy, rad, col, velx, vely) {
         const svg = document.querySelector("svg");
         const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        const newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
 
-        newCircle.setAttribute("cx", Math.random() * (screenwidth - 2 * radius) + radius);
-        newCircle.setAttribute("cy", Math.random() * (screenheight - 2 * radius) + radius);
-        newCircle.setAttribute("r", radius);
-        newCircle.innerHTML = `<label>Circle ${circlenum++}</label>`;
+        newCircle.setAttribute("cx", posx);
+        newCircle.setAttribute("cy", posy);
+        newCircle.setAttribute("r", rad);
         newCircle.setAttribute("fill", getRandomColor());
 
-        circle_velocity_x.push(Math.floor(Math.random() * start_velo) - (start_velo / 2));
-        circle_velocity_y.push(Math.floor(Math.random() * start_velo) - (start_velo / 2));
+        newText.setAttribute("x", posx);
+        newText.setAttribute("y", posy);
+        newText.innerHTML = circlenum;
+
+        circle_velocity_x.push(velx);
+        circle_velocity_y.push(vely);
+        circlenum += 1
 
         svg.appendChild(newCircle);
     }
 
-    function addCon() {
-        a = Math.floor(Math.random() * circlenum);
-        b = Math.floor(Math.random() * circlenum);
+    function addCon(cona,conb) {
+        a = cona;
+        b = conb;
         connect_1.push(Math.floor(a));
         connect_2.push(Math.floor(b));
         const svg = document.querySelector("svg");
@@ -63,7 +70,7 @@
         const letters = '0123456789ABCDEF';
         let color = '#';
         for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
+            color += letters[Math.floor(Math.random() * letters.length)];
         }
         return color;
     };
@@ -71,6 +78,7 @@
     function updateCircles() {
         const svg = document.querySelector("svg");
         const circles = svg.getElementsByTagName("circle");
+        const labels = svg.getElementsByTagName("text");
         for (let i = 0; i < circles.length; i++) {
             let cx = parseFloat(circles[i].getAttribute("cx"));
             let cy = parseFloat(circles[i].getAttribute("cy"));
@@ -96,7 +104,6 @@
             }
             circles[i].setAttribute("cx", cx);
             circles[i].setAttribute("cy", cy);
-
 
             circle_velocity_y[i] += gravity;
             
