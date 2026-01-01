@@ -242,7 +242,7 @@
                 const dx = nodes[j].posx - nodes[i].posx;
                 const dy = nodes[j].posy - nodes[i].posy;
                 const distSq = dx * dx + dy * dy;
-                const minDist = nodes[i].rad + nodes[j].rad;
+                const minDist = nodes[i].rad*2 + nodes[j].rad*2;
 
                 if (distSq < minDist * minDist && distSq > 0) {
                     const force = repulsionStrength / distSq;
