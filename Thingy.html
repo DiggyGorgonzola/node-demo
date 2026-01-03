@@ -55,10 +55,29 @@
                 return node ? nodes.indexOf(node) : -1;
             })(),
             radius / 2, 
-            '#FF0000')">Add Agent</button>
+            '#FF0000')">Add Agent</button><br>
+        <button onclick="apply_agent_func()">Agent step!</button>
     </div>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
-        <button onclick="apply_agent_func()">Agent step!</button>
+        <h>Connection Color:</h>
+        <input id="connor-color" type="color" placeholder="Enter a hex color..." value="#000000"><br>
+
+        <h>Connection Strength:</h>
+        <input id="connor-strength" type="number" value="1"><br>
+
+        <h>Connection ID #1</h>
+        <input id="kurtis-connor" type="number" value="0"><br>
+
+        <h>Connection ID #2</h>
+        <input id="kirke" type="number" value="1"><br>
+
+
+        <button onclick="addCon(
+            parseInt(document.getElementById('kurtis-connor').value),
+            parseInt(document.getElementById('kirke').value),
+            parseFloat(document.getElementById('connor-strength').value),
+            String(document.getElementById('connor-color').value)
+        )">Add Connection</button>
     </div>
 </body>
 <script>
@@ -264,8 +283,8 @@
             nodes[i].newText.setAttribute("y",nodes[i].posy)
         }
         for (let i = 0; i < agents.length; i++) {
-            agents[i].posx -= (agents[i].posx - nodes[agents[i].target].posx)/2;
-            agents[i].posy -= (agents[i].posy - nodes[agents[i].target].posy + 2*nodes[agents[i].target].rad)/2;
+            agents[i].posx -= agentspeed*(agents[i].posx - nodes[agents[i].target].posx)/2;
+            agents[i].posy -= agentspeed*(agents[i].posy - nodes[agents[i].target].posy + 2*nodes[agents[i].target].rad)/2;
 
             agents[i].newAgent.setAttribute("cx",agents[i].posx)
             agents[i].newAgent.setAttribute("cy",agents[i].posy)
