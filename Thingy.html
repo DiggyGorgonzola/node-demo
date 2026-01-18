@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <style>
+    circle {
+        transition: fill 0.2s ease, transform 0.2s ease;
+        transform-box: fill-box;
+        transform-origin: center;
+        cursor: grab;
+    }
 
+    circle:hover {
+        fill: orange;
+        transform: scale(1.2);
+    }
+    circle:active {
+        cursor:grabbing;
+    }
 </style>
 <head>
     <title>Node demo</title>
     <link rel="icon" type="image/png" href="https://images-ext-1.discordapp.net/external/G-GxnuHyZoNCXyzhinV-fvwy9CWDTKhDvY9duLbpJm0/%3Fsize%3D512/https/cdn.discordapp.com/avatars/747255405616562269/11fb80cf255901f2cbc34bed3b925fcf.png?format=webp&quality=lossless&width=245&height=245">
 </head>
 <body>
-    <svg height="800px" width="800px" style="border:5px double black;">
+    <svg id="svg-item" height="800px" width="800px" style="border:5px double black;">
     </svg>
     <br>
     <div style="border:1px solid black;width:fit-content;margin:5px;padding:5px;">
@@ -165,8 +178,7 @@
 
         newAgent.setAttribute("cx",posx)
         newAgent.setAttribute("cy",posy)
-        newAgent.setAttribute("r",rad)
-        newAgent.setAttribute("fill",col)
+        newAgent.setAttribute("r",rad);
 
 
 
@@ -200,7 +212,7 @@
     inp5.addEventListener("input", () => {
         start_velo = Number(inp5.value);
     });
-
+            
     function addCircle(posx, posy, rad, col, velx, vely, label) {
         const svg = document.querySelector("svg");
         const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
